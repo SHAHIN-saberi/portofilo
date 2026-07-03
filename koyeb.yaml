@@ -1,0 +1,17 @@
+# Koyeb Web Service Configuration
+name: portfolio-backend
+type: web
+docker:
+  dockerfile: backend/Dockerfile
+routes:
+  - path: /
+    port: 8000
+env:
+  - key: AI_PROVIDER
+    value: gemini
+  - key: GEMINI_CHAT_MODEL
+    value: gemini-2.5-flash
+  - key: GEMINI_EMBED_MODEL
+    value: text-embedding-004
+  - key: EMBEDDING_DIM
+    value: "768"

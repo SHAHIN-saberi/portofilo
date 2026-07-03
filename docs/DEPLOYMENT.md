@@ -1,4 +1,4 @@
-# Deployment Guide — Universal Architecture (Docker Compose VPS & Render Cloud)
+# Deployment Guide — Universal Architecture (Koyeb, Render & Docker Compose VPS)
 
 ## Overview
 
@@ -8,13 +8,47 @@ This project is architected around standard, long-lived web services and contain
 - **Database:** PostgreSQL with `pgvector` extension (768-dim vectors for Google Gemini)
 - **AI Provider:** Google Gemini API (`gemini-2.5-flash` + `text-embedding-004`)
 
-You have two primary, highly reliable options for deployment:
+---
+
+## Option 1: Koyeb Cloud + Neon Postgres (100% Free & No Credit Card Required)
+
+**Koyeb.com** runs Docker containers continuously on their Free Eco Tier without requiring a credit card when signing up via GitHub.
+
+### Step 1: Create Free Postgres + pgvector Database (Neon or Supabase)
+
+1. Sign up at [Neon.tech](https://neon.tech) or [Supabase.com](https://supabase.com) using GitHub (No credit card required).
+2. Create a new free database project.
+3. If using Supabase, run `CREATE EXTENSION IF NOT EXISTS vector;` in SQL Editor.
+4. Copy the PostgreSQL connection string (`postgresql+asyncpg://user:pass@host/db`).
+
+### Step 2: Deploy Backend on Koyeb
+
+1. Sign into [Koyeb.com](https://www.koyeb.com) via GitHub.
+2. Click **Create Web Service** → **GitHub** and select your repository (`SHAHIN-saberi/portofilo`).
+3. In **Builder**: Choose **Dockerfile** and set **Dockerfile path** to `backend/Dockerfile`.
+4. In **Ports**: Set port to `8000` and path to `/`.
+5. Under **Environment Variables**, add:
+   - `DATABASE_URL`: Your Neon/Supabase connection string.
+   - `AI_PROVIDER`: `gemini`
+   - `GEMINI_API_KEY`: Your free Gemini API key from [aistudio.google.com](https://aistudio.google.com).
+   - `AUTH_SECRET`: A 64-character secure string.
+   - `ADMIN_EMAIL`: Your admin login email.
+   - `ADMIN_PASSWORD_HASH`: Hashed password from `python3 scripts/gen_password_hash.py <password>`.
+6. Click **Deploy**. Koyeb will automatically build `backend/Dockerfile`, execute Alembic migrations, and launch FastAPI!
+
+### Step 3: Deploy Frontend on Vercel or Netlify
+
+1. In Vercel or Netlify, import the same repository (`SHAHIN-saberi/portofilo`).
+2. Set **Root Directory** strictly to `frontend`.
+3. Under Environment Variables, add:
+   - `NEXT_PUBLIC_API_URL`: Your Koyeb backend URL (e.g. `https://your-backend.koyeb.app/api/v1`).
+4. Click **Deploy**.
 
 ---
 
-## Option 1: Render Cloud + Neon Postgres (100% Free & Highly Compatible)
+## Option 2: Render Cloud + Neon Postgres
 
-Unlike serverless platforms with strict 10-second timeouts, **Render.com** runs your FastAPI application as a long-lived ASGI process (`uvicorn`), making it the ideal free platform for multi-stage RAG pipelines.
+Unlike serverless platforms with strict 10-second timeouts, **Render.com** runs your FastAPI application as a long-lived ASGI process (`uvicorn`), making it another great free platform for multi-stage RAG pipelines.
 
 ### Step 1: Create Free Postgres + pgvector Database (Neon or Supabase)
 
