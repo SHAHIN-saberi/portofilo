@@ -20,6 +20,24 @@
       "dest": "frontend/$1"
     }
   ],
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "nextjs"
+    },
+    "backend": {
+      "root": "backend"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "backend"
+      }
+    }
+  ],
   "env": {
     "PYTHONPATH": "./backend"
   }

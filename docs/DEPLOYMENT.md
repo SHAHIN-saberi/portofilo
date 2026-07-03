@@ -50,10 +50,14 @@ In your Vercel project dashboard, go to **Settings** → **Environment Variables
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:password@host:port/database
+DATABASE_URL=postgresql+asyncpg://user:password@host:port/database
 
-# DeepSeek AI
-DEEPSEEK_API_KEY=your_deepseek_api_key_here
+# AI Provider (Google Gemini Free API)
+AI_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_CHAT_MODEL=gemini-2.5-flash
+GEMINI_EMBED_MODEL=text-embedding-004
+EMBEDDING_DIM=768
 
 # Auth
 AUTH_SECRET=your_32_char_random_string_here
@@ -88,19 +92,16 @@ NEXT_PUBLIC_LINKEDIN_URL=https://linkedin.com/in/yourusername
    - Or use the Vercel CLI: `vercel deploy --prod`
 2. The backend will be available at `/api/*` routes
 
-## Step 5: Run Database Migrations
+## Step 5: Run Database Migrations & Reindex Knowledge Base
 
-After deployment, run migrations to create tables:
+After deployment, run migrations to create tables and update vector dimensions to 768:
 
 ```bash
-# Using Vercel CLI
-vercel env pull .env.local
-cd backend
-alembic upgrade head
-
-# Or connect directly to your database
-DATABASE_URL=... alembic upgrade head
+# Using Vercel CLI / local terminal pointing to remote database
+DATABASE_URL="postgresql+asyncpg://..." alembic upgrade head
 ```
+
+⚠️ **IMPORTANT AFTER GEMINI MIGRATION:** Because the vector dimension changed from 1024 to 768 for Gemini `text-embedding-004`, you MUST reindex the knowledge base immediately after deployment. Log into the admin panel (`/adshs/login`) and click **Reindex Chatbot Knowledge** (or send a POST request to `/api/v1/admin/reindex` with your admin Bearer token).
 
 ## Step 6: Verify Deployment
 
@@ -144,8 +145,8 @@ Update `ADMIN_PASSWORD_HASH` in Vercel environment variables and redeploy.
 ### Cost Estimate (Hobby Plan)
 
 - **Vercel:** Free (Hobby plan)
-- **Database:** Free tier sufficient for personal portfolio
-- **DeepSeek API:** Pay-per-use (~$0.14 per 1M tokens)
+- **Database:** Free tier (Neon or Supabase) sufficient for personal portfolio
+- **Google Gemini API:** Free tier via Google AI Studio (up to 1,500 requests/day, no credit card required)
 
 ## Troubleshooting
 
