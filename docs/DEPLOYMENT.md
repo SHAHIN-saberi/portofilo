@@ -1,4 +1,4 @@
-# Deployment Guide — Universal Architecture (Koyeb, Render & Docker Compose VPS)
+# Deployment Guide — Universal Architecture (Northflank, Koyeb, Render & VPS)
 
 ## Overview
 
@@ -10,7 +10,48 @@ This project is architected around standard, long-lived web services and contain
 
 ---
 
-## Option 1: Koyeb Cloud + Neon Postgres (100% Free & No Credit Card Required)
+## Option 1: Northflank Cloud + Neon Postgres (Recommended Developer Sandbox)
+
+**Northflank (`app.northflank.com`)** provides a powerful Developer Sandbox where you can run Dockerfiles cleanly directly from GitHub.
+
+### Step 1: Create Free Postgres + pgvector Database (Neon or Supabase)
+
+1. Sign up at [Neon.tech](https://neon.tech) or [Supabase.com](https://supabase.com) using GitHub.
+2. Create a new free database project.
+3. If using Supabase, run `CREATE EXTENSION IF NOT EXISTS vector;` in SQL Editor.
+4. Copy the PostgreSQL connection string (`postgresql+asyncpg://user:pass@host/db`).
+
+### Step 2: Deploy Backend on Northflank
+
+1. Sign into [Northflank](https://app.northflank.com).
+2. Click **Create Service** → **Combined / Deployment Service**.
+3. Connect your GitHub repository (`SHAHIN-saberi/portofilo`).
+4. In **Build Settings**:
+   - Build Type: **Dockerfile**
+   - Dockerfile path: `backend/Dockerfile`
+   - Build context: `backend`
+5. Under **Ports & Networking**:
+   - Port: `8000` | Protocol: `HTTP` | Public: **Checked (Yes)** (Northflank will generate a public domain for your backend).
+6. Under **Environment Variables**, add:
+   - `DATABASE_URL`: Your Neon/Supabase connection string.
+   - `AI_PROVIDER`: `gemini`
+   - `GEMINI_API_KEY`: Your free Gemini API key from [aistudio.google.com](https://aistudio.google.com).
+   - `AUTH_SECRET`: A 64-character secure string.
+   - `ADMIN_EMAIL`: Your admin login email.
+   - `ADMIN_PASSWORD_HASH`: Hashed password from `python3 scripts/gen_password_hash.py <password>`.
+7. Click **Create Service**. Northflank will build your Docker container, run migrations, and launch FastAPI!
+
+### Step 3: Deploy Frontend on Vercel or Netlify
+
+1. In Vercel or Netlify, import the same repository (`SHAHIN-saberi/portofilo`).
+2. Set **Root Directory** strictly to `frontend`.
+3. Under Environment Variables, add:
+   - `NEXT_PUBLIC_API_URL`: Your Northflank backend URL (e.g. `https://portfolio-backend--project.nf.app/api/v1`).
+4. Click **Deploy**.
+
+---
+
+## Option 2: Koyeb Cloud + Neon Postgres
 
 **Koyeb.com** runs Docker containers continuously on their Free Eco Tier without requiring a credit card when signing up via GitHub.
 
